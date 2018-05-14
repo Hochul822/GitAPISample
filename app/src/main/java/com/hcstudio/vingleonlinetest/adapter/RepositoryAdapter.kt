@@ -2,14 +2,14 @@ package com.hcstudio.vingleonlinetest.adapter
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import com.hcstudio.vingleonlinetest.R
-import com.hcstudio.vingleonlinetest.data.Repo
+import com.hcstudio.vingleonlinetest.model.Repo
+import kotlinx.android.synthetic.main.repo_list_item.view.*
 import java.util.*
 
 /**
@@ -43,17 +43,11 @@ class RepositoryAdapter(private val context: Context, items: ArrayList<Repo>) : 
 
 
     inner class RepositoryAdapter(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        internal var v: View? = null
-        internal var tv: TextView? = null
-        internal var iv: ImageView? = null
 
-        internal fun bind(repo: Repo) {
-
-            tv!!.setText("")
-
-            iv!!.setOnClickListener { v ->
-
-            }
+        fun bind(repo: Repo) {
+            itemView.name.text = repo.name
+            itemView.star.text = repo.count.toString()
+            itemView.description.text = repo.description
         }
     }
 }

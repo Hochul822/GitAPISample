@@ -4,11 +4,11 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
-import android.widget.Toast
 import com.hcstudio.vingleonlinetest.R
 import com.hcstudio.vingleonlinetest.adapter.RepositoryAdapter
 import com.hcstudio.vingleonlinetest.api.GithubService
-import com.hcstudio.vingleonlinetest.data.Repo
+import com.hcstudio.vingleonlinetest.model.Contributor
+import com.hcstudio.vingleonlinetest.model.Repo
 import kotlinx.android.synthetic.main.activity_repository.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -38,25 +38,36 @@ class RepositoryActivity : AppCompatActivity() {
 
         // Github Repo
         val username = intent.getStringExtra("username")
-        Log.i(TAG, "repo user name : " + username)
 
         val retrofit = Retrofit.Builder()
                 .baseUrl("https://api.github.com")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
-
         val service = retrofit.create(GithubService::class.java)
-        val repos = service.listRepos("username")
 
-        //repos.enqueue()
+        val repos = service.listRepos(username)
+
+        showUserRepos(repos)
+
+        showContributors(service)
+    }
+
+    private fun showUserRepos(repos: Call<List<Repo>>) {
         repos.enqueue(object : Callback<List<Repo>> {
             override fun onResponse(call: Call<List<Repo>>?, response: Response<List<Repo>>?) {
-                Log.i(TAG, "repo ok : " + response?.isSuccessful)
 
-                if (response!!.isSuccessful) {
-                    val repo = response.body()
-                    repo?.forEach {
-                        Log.i(TAG, "repo : " + repo)
+                Log.i(TAG, "repo msg : " + response?.message())
+
+                response?.let {
+                    if (response.isSuccessful) {
+
+                        val list = response?.body()
+                        list?.forEach {
+                            Log.i(TAG, "user : " + it.toString())
+                            repoList.add(it)
+                        }
+
+                        repo_recycler_view.adapter.notifyDataSetChanged()
                     }
                 }
             }
@@ -66,10 +77,24 @@ class RepositoryActivity : AppCompatActivity() {
                 Log.i(TAG, "fail : " + t.toString());
             }
         })
-
     }
 
+    private fun showContributors(service: GithubService) {
+        val contributors = service.repoContributors("square", "retrofit")
 
+        contributors.enqueue(object : Callback<List<Contributor>> {
+            override fun onResponse(call: Call<List<Contributor>>?, response: Response<List<Contributor>>?) {
+                val list = response?.body()
+                list?.forEach {
+                    Log.i(TAG, it.toString())
+                }
+            }
+
+            override fun onFailure(call: Call<List<Contributor>>?, t: Throwable?) {
+
+            }
+        })
+    }
 
 
 }
